@@ -8,6 +8,7 @@
 #define MENU_SLOW 4
 #define MENU_FAST 5
 
+
 //GLUT timer variable
 GLubyte timer_cnt = 16;
 bool timer_enabled = false;
@@ -37,13 +38,14 @@ GLfloat leftLegBounce = 0.05f;
 GLfloat rightLegBounce = 0.05f;
 
 //mouse position
-GLfloat mouseReleasePositionX;
-GLfloat mouseReleasePositionY;
-GLfloat mousePressPositionX;
-GLfloat mousePressPositionY;
-vec2 mouseReleasePosition;
-vec2 mousePressPosition;
-GLfloat mouseRotateDegree = 0.0f;
+GLfloat mousePressX = 0.0f;
+GLfloat mousePressY = 0.0f;
+GLfloat mouseRotateX = 0.0f;
+GLfloat mouseRotateY = 0.0f;
+GLfloat prevMouseRotateX = 0.0f;
+GLfloat prevMouseRotateY = 0.0f;
+
+
 
 GLint um4mvp;			// shader mvp uniform id 
 GLuint program;			// shader program id
@@ -125,6 +127,7 @@ void My_Init()
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
+
 	//Enable shader layout location 0 and 1 for vertex and color   
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
@@ -142,6 +145,8 @@ vec3 Normalized(vec3 a, vec3 b, float length) {
 	dz = a.z - b.z;
 
 	dx = dx * length / distance(a, b);
+	dy = dy * length / distance(a, b);
+	dz = dz * length / distance(a, b);
 	vec3 c = vec3(a.x + dx, a.y + dy, a.z + dz);
 	return c;
 }
@@ -220,7 +225,7 @@ void My_Display()
 			k += unitLength;
 		}
 	}*/
-	const int gridNum = 30;
+	const int gridNum = 20;
 	const float unitCubeLength = 0.5f / gridNum;
 	float gridCube[36 * 3 * 2 * gridNum * gridNum];
 	float gridSample[36 * 3 * 2]{
@@ -333,11 +338,11 @@ void My_Display()
 	for (int i = 0; i < gridNum; ++i) {
 		for (int j = 0; j < gridNum; ++j) {
 			for (int k = 0; k < 6; ++k) {
-				gridCube[s] = gridCube[k * 3 + 0] + unitCubeLength * i;
+				gridCube[s] = gridSample[k * 3 + 0] + unitCubeLength * i;
 				s++;
-				gridCube[s] = gridCube[k * 3 + 1] + unitCubeLength * j;
+				gridCube[s] = gridSample[k * 3 + 1] + unitCubeLength * j;
 				s++;
-				gridCube[s] = gridCube[k * 3 + 2];
+				gridCube[s] = gridSample[k * 3 + 2];
 				s++;
 			}
 		}
@@ -346,11 +351,11 @@ void My_Display()
 	for (int i = 0; i < gridNum; ++i) {
 		for (int j = 0; j < gridNum; ++j) {
 			for (int k = 6; k < 12; ++k) {
-				gridCube[s] = gridCube[k * 3 + 0];
+				gridCube[s] = gridSample[k * 3 + 0];
 				s++;
-				gridCube[s] = gridCube[k * 3 + 1] + unitCubeLength * j;
+				gridCube[s] = gridSample[k * 3 + 1] + unitCubeLength * j;
 				s++;
-				gridCube[s] = gridCube[k * 3 + 2] + unitCubeLength * i;
+				gridCube[s] = gridSample[k * 3 + 2] + unitCubeLength * i;
 				s++;
 			}
 		}
@@ -359,11 +364,11 @@ void My_Display()
 	for (int i = 0; i < gridNum; ++i) {
 		for (int j = 0; j < gridNum; ++j) {
 			for (int k = 12; k < 18; ++k) {
-				gridCube[s] = gridCube[k * 3 + 0] + unitCubeLength * i;
+				gridCube[s] = gridSample[k * 3 + 0] + unitCubeLength * i;
 				s++;
-				gridCube[s] = gridCube[k * 3 + 1] + unitCubeLength * j;
+				gridCube[s] = gridSample[k * 3 + 1] + unitCubeLength * j;
 				s++;
-				gridCube[s] = gridCube[k * 3 + 2];
+				gridCube[s] = gridSample[k * 3 + 2];
 				s++;
 			}
 		}
@@ -372,11 +377,11 @@ void My_Display()
 	for (int i = 0; i < gridNum; ++i) {
 		for (int j = 0; j < gridNum; ++j) {
 			for (int k = 18; k < 24; ++k) {
-				gridCube[s] = gridCube[k * 3 + 0];
+				gridCube[s] = gridSample[k * 3 + 0];
 				s++;
-				gridCube[s] = gridCube[k * 3 + 1] + unitCubeLength * j;
+				gridCube[s] = gridSample[k * 3 + 1] + unitCubeLength * j;
 				s++;
-				gridCube[s] = gridCube[k * 3 + 2] + unitCubeLength * i;
+				gridCube[s] = gridSample[k * 3 + 2] + unitCubeLength * i;
 				s++;
 			}
 		}
@@ -385,11 +390,11 @@ void My_Display()
 	for (int i = 0; i < gridNum; ++i) {
 		for (int j = 0; j < gridNum; ++j) {
 			for (int k = 24; k < 30; ++k) {
-				gridCube[s] = gridCube[k * 3 + 0] + unitCubeLength * i;
+				gridCube[s] = gridSample[k * 3 + 0] + unitCubeLength * i;
 				s++;
-				gridCube[s] = gridCube[k * 3 + 1];
+				gridCube[s] = gridSample[k * 3 + 1];
 				s++;
-				gridCube[s] = gridCube[k * 3 + 2] + unitCubeLength * j;
+				gridCube[s] = gridSample[k * 3 + 2] + unitCubeLength * j;
 				s++;
 			}
 		}
@@ -398,14 +403,87 @@ void My_Display()
 	for (int i = 0; i < gridNum; ++i) {
 		for (int j = 0; j < gridNum; ++j) {
 			for (int k = 30; k < 36; ++k) {
-				gridCube[s] = gridCube[k * 3 + 0] + unitCubeLength * i;
+				gridCube[s] = gridSample[k * 3 + 0] + unitCubeLength * i;
 				s++;
-				gridCube[s] = gridCube[k * 3 + 1];
+				gridCube[s] = gridSample[k * 3 + 1];
 				s++;
-				gridCube[s] = gridCube[k * 3 + 2] + unitCubeLength * j;
+				gridCube[s] = gridSample[k * 3 + 2] + unitCubeLength * j;
 				s++;
 			}
 		}
+	}
+
+	for (int i = 36 * gridNum * gridNum; i < 36 * gridNum * gridNum * 2; i++) {
+		gridCube[i * 3 + 0] = 1.0f;
+		gridCube[i * 3 + 1] = 0.0f;
+		gridCube[i * 3 + 2] = 0.0f;
+	}
+
+	const int cylinderNum = 10;
+	const float radian = 0.5f;
+	const float cylinderHeight = 1.5f;
+	const int circleVertNum = cylinderNum;
+	const float radPerTriangle = 360 / (float)cylinderNum;
+	float cylinderData[(3 * cylinderNum * 2 + 6 * cylinderNum) * 3 * 2];
+	int cylinder_tmp = 0;
+	for (int i = 0; i < circleVertNum; ++i) {
+		cylinderData[i * 9 + 0] = 0.0f;
+		cylinderData[i * 9 + 1] = cylinderHeight / 2;
+		cylinderData[i * 9 + 2] = 0.0f;
+
+		cylinderData[i * 9 + 3] = radian * cos(deg2rad(radPerTriangle * i));
+		cylinderData[i * 9 + 4] = cylinderHeight / 2;
+		cylinderData[i * 9 + 5] = radian * sin(deg2rad(radPerTriangle * i));
+
+		cylinderData[i * 9 + 6] = radian * cos(deg2rad(radPerTriangle * (i + 1)));
+		cylinderData[i * 9 + 7] = cylinderHeight / 2;
+		cylinderData[i * 9 + 8] = radian * sin(deg2rad(radPerTriangle * (i + 1)));
+	}
+	cylinder_tmp = 9 * circleVertNum;
+	for (int i = 0; i < circleVertNum; ++i) {
+		cylinderData[cylinder_tmp + i * 9 + 0] = 0.0f;
+		cylinderData[cylinder_tmp + i * 9 + 1] = -cylinderHeight / 2;
+		cylinderData[cylinder_tmp + i * 9 + 2] = 0.0f;
+
+		cylinderData[cylinder_tmp + i * 9 + 3] = radian * cos(deg2rad(radPerTriangle * i));
+		cylinderData[cylinder_tmp + i * 9 + 4] = -cylinderHeight / 2;
+		cylinderData[cylinder_tmp + i * 9 + 5] = radian * sin(deg2rad(radPerTriangle * i));
+
+		cylinderData[cylinder_tmp + i * 9 + 6] = radian * cos(deg2rad(radPerTriangle * (i + 1)));
+		cylinderData[cylinder_tmp + i * 9 + 7] = -cylinderHeight / 2;
+		cylinderData[cylinder_tmp + i * 9 + 8] = radian * sin(deg2rad(radPerTriangle * (i + 1)));
+	}
+	cylinder_tmp *= 2;
+	for (int i = 0; i < circleVertNum; ++i) {
+		cylinderData[cylinder_tmp + i * 18 + 0] = radian * cos(deg2rad(radPerTriangle * i));
+		cylinderData[cylinder_tmp + i * 18 + 1] = cylinderHeight / 2;
+		cylinderData[cylinder_tmp + i * 18 + 2] = radian * sin(deg2rad(radPerTriangle * i));
+
+		cylinderData[cylinder_tmp + i * 18 + 3] = radian * cos(deg2rad(radPerTriangle * (i + 1)));
+		cylinderData[cylinder_tmp + i * 18 + 4] = cylinderHeight / 2;
+		cylinderData[cylinder_tmp + i * 18 + 5] = radian * sin(deg2rad(radPerTriangle * (i + 1)));
+
+		cylinderData[cylinder_tmp + i * 18 + 6] = radian * cos(deg2rad(radPerTriangle * i));
+		cylinderData[cylinder_tmp + i * 18 + 7] = -cylinderHeight / 2;
+		cylinderData[cylinder_tmp + i * 18 + 8] = radian * sin(deg2rad(radPerTriangle * i));
+
+		cylinderData[cylinder_tmp + i * 18 + 9] = radian * cos(deg2rad(radPerTriangle * i));
+		cylinderData[cylinder_tmp + i * 18 + 10] = -cylinderHeight / 2;
+		cylinderData[cylinder_tmp + i * 18 + 11] = radian * sin(deg2rad(radPerTriangle * i));
+
+		cylinderData[cylinder_tmp + i * 18 + 12] = radian * cos(deg2rad(radPerTriangle * (i + 1)));
+		cylinderData[cylinder_tmp + i * 18 + 13] = -cylinderHeight / 2;
+		cylinderData[cylinder_tmp + i * 18 + 14] = radian * sin(deg2rad(radPerTriangle * (i + 1)));
+
+		cylinderData[cylinder_tmp + i * 18 + 15] = radian * cos(deg2rad(radPerTriangle * (i + 1)));
+		cylinderData[cylinder_tmp + i * 18 + 16] = cylinderHeight / 2;
+		cylinderData[cylinder_tmp + i * 18 + 17] = radian * sin(deg2rad(radPerTriangle * (i + 1)));
+	}
+	cylinder_tmp *= 2;
+	for (int i = 0; i < circleVertNum * 3  * 2 * 2; ++i) {
+		cylinderData[cylinder_tmp + i * 3 + 0] = 0.0f;
+		cylinderData[cylinder_tmp + i * 3 + 1] = 1.0f;
+		cylinderData[cylinder_tmp + i * 3 + 2] = 3.0f;
 	}
 
 	float data[36 * 3 * 2]{
@@ -507,15 +585,16 @@ void My_Display()
 		1.0f, 0.0f, 0.0f,
 		1.0f, 0.0f, 0.0f
 	};
-
-	/*for (int i = 0; i < 36; ++i) {
-		vec3 originVec = vec3(data[i * 3 + 0], data[i * 3 + 1], data[i * 3 + 2]);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	for (int i = 0; i < 36 * gridNum * gridNum; ++i) {
+		vec3 originVec = vec3(gridCube[i * 3 + 0], gridCube[i * 3 + 1], gridCube[i * 3 + 2]);
 		vec3 center = vec3(0, 0, 0);
-		vec3 normalizedVec = Normalized(originVec, center, cubeSize / 2);
-		data[i * 3 + 0] = normalizedVec.x;
-		data[i * 3 + 1] = normalizedVec.y;
-		data[i * 3 + 2] = normalizedVec.z;
-	}*/
+		vec3 normalizedVec = Normalized(originVec, center, 0.5f / 2);
+		gridCube[i * 3 + 0] = normalizedVec.x;
+		gridCube[i * 3 + 1] = normalizedVec.y;
+		gridCube[i * 3 + 2] = normalizedVec.z;
+	}
+
 	float torsorData[36 * 3 * 2] = {0};
 	for (int i = 0; i < cubeVertNum * 2; ++i) {
 		
@@ -532,15 +611,30 @@ void My_Display()
 	}
 	
 	
+	/*for (int i = 0; i < cubeVertNum * gridNum * gridNum * 2; ++i) {
+
+		if (i < cubeVertNum * gridNum * gridNum) {
+			gridCube[i * 3 + 1] = gridCube[i * 3 + 1] * 3.0f;
+			gridCube[i * 3 + 0] = gridCube[i * 3 + 0] * 2.0f;
+		}
+		else {
+			gridCube[i * 3 + 1] = gridCube[i * 3 + 1];
+			gridCube[i * 3 + 0] = gridCube[i * 3 + 0];
+		}
+
+		gridCube[i * 3 + 2] = gridCube[i * 3 + 2];
+	}*/
 
 
 
 	//Put data into buffer
-	glBufferData(GL_ARRAY_BUFFER, sizeof(torsorData), torsorData, GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(torsorData), torsorData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cylinderData), cylinderData, GL_STATIC_DRAW);
 
 	//Select which range as vertex and which as color
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float) * 36 * 3));
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float) * 36 * 3));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float) * circleVertNum * 3 * 2 * 2 * 3));
 
 	// Tell openGL to use the shader program we created before
 	glUseProgram(program);
@@ -557,12 +651,15 @@ void My_Display()
 	}
 	
 	
-	rotate_mat = rotate(mat4(), deg2rad (torsorDegree), vec3(0.0f, 1.0f, 0.0f));
+	rotate_mat = rotate(mat4(), deg2rad (torsorDegree + mouseRotateX + prevMouseRotateX), vec3(0.0f, 1.0f, 0.0f));
+
 	//mat4 mouseRotate = rotate(mat4(), mouseRotateDegree, vec3(0.0f, 1.0f, 0.0f));
 	
-	model =  rotate_mat * translate_mat;
+	model =  translate_mat * rotate_mat;
 	mat4 torsorRotate = rotate_mat;
-	mat4 torsorModel = translate_mat;
+	//mat4 torsorModel = translate_mat;*/
+	mat4 torsorModel = model;
+
 	//cout << "( " << temp.x << ", " << temp.y << ", " << temp.z << " )" << endl;
 	//Calculate mvp matrix by ( projection * view * model ) 
 	mat4 mvp = projection * view * model;
@@ -573,14 +670,29 @@ void My_Display()
 
 
 	// Tell openGL to draw the vertex array we had binded before
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	//glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawArrays(GL_TRIANGLES, 0, circleVertNum * 3  * 2 * 2);
 
-	float headData[36 * 3 * 2];
-	for (int i = 0; i < cubeVertNum * 2; ++i) {
+	//float headData[36 * 3 * 2];
+	float headData[36 * gridNum * gridNum * 3 * 2];
+	/*for (int i = 0; i < cubeVertNum * 2; ++i) {
 		if (i < cubeVertNum) {
 			headData[i * 3 + 0] = data[i * 3 + 0];
 			headData[i * 3 + 1] = data[i * 3 + 1];
 			headData[i * 3 + 2] = data[i * 3 + 2];
+		}
+		else {
+			headData[i * 3 + 0] = 0.0f;
+			headData[i * 3 + 1] = 0.3f;
+			headData[i * 3 + 2] = 0.5f;
+		}
+	}*/
+
+	for (int i = 0; i < cubeVertNum * gridNum * gridNum * 2; ++i) {
+		if (i < cubeVertNum * gridNum * gridNum) {
+			headData[i * 3 + 0] = gridCube[i * 3 + 0];
+			headData[i * 3 + 1] = gridCube[i * 3 + 1];
+			headData[i * 3 + 2] = gridCube[i * 3 + 2];
 		}
 		else {
 			headData[i * 3 + 0] = 0.0f;
@@ -593,7 +705,8 @@ void My_Display()
 
 	//Select which range as vertex and which as color
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float) * 36 * 3));
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float) * 36 * 3));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float) * 36 * gridNum * gridNum * 3));
 	
 	headDegree += headBounce;
 	//cout << "torsorDegree: " << torsorDegree << endl;
@@ -601,11 +714,11 @@ void My_Display()
 		headBounce = -headBounce;
 	}
 	mat4 headRotate = rotate(mat4(), deg2rad(headDegree), vec3(0.0f, 1.0f, 0.0f));
-	translate_mat = translate(mat4(), vec3(0.0f, 1.0f, 0.0f));
+	translate_mat = translate(mat4(), vec3(0.0f, 1.25f, 0.0f));
 	mat4 prev_model = torsorModel;
-	model = translate_mat;
+	model = translate_mat * headRotate;
 	mat4 headModel = model;
-	mvp = projection * view * torsorRotate * headModel * prev_model * headRotate;
+	mvp = projection * view  * torsorModel *  model;
 
 	// Transfer value of mvp to both shader's inner variable 'um4mvp'; 
 	glUniformMatrix4fv(um4mvp, 1, GL_FALSE, value_ptr(mvp));
@@ -613,7 +726,8 @@ void My_Display()
 
 
 	// Tell openGL to draw the vertex array we had binded before
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	//glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawArrays(GL_TRIANGLES, 0, 36 * gridNum * gridNum);
 
 	//hands
 	//left hand
@@ -651,9 +765,11 @@ void My_Display()
 	mat4 leftHandRotate = rotate(mat4(), deg2rad(leftHandDegree), vec3(-1.0f, 0.0f, 0.0f));
 
 	prev_model = torsorModel;
-	model = translate_mat;
+	/*model = translate_mat;
 	mat4 leftHandModel = model;
-	mvp = projection * view * torsorRotate  * model * prev_model * temp_mat2 * leftHandRotate * temp_mat1;
+	mvp = projection * view * torsorRotate  * model  * prev_model  * temp_mat2  * leftHandRotate  * temp_mat1 ;*/
+	model = translate_mat * temp_mat2 * leftHandRotate * temp_mat1;
+	mvp = projection * view * torsorModel * model;
 
 	// Transfer value of mvp to both shader's inner variable 'um4mvp'; 
 	glUniformMatrix4fv(um4mvp, 1, GL_FALSE, value_ptr(mvp));
@@ -695,9 +811,12 @@ void My_Display()
 
 	mat4 rightHandRotate = rotate(mat4(), deg2rad(rightHandDegree), vec3(-1.0f, 0.0f, 0.0f));
 	prev_model = torsorModel;
-	model = translate_mat;
+	//model = translate_mat;
+	model = translate_mat * temp_mat2 * rightHandRotate * temp_mat1;
 	mat4 rightHandModel = model;
-	mvp = projection * view * torsorRotate * model * prev_model * temp_mat2 * rightHandRotate * temp_mat1;
+	//mvp = projection * view * torsorRotate * model * prev_model * temp_mat2 * rightHandRotate * temp_mat1;
+	mvp = projection * view * torsorModel * model;
+
 
 	// Transfer value of mvp to both shader's inner variable 'um4mvp'; 
 	glUniformMatrix4fv(um4mvp, 1, GL_FALSE, value_ptr(mvp));
@@ -740,9 +859,11 @@ void My_Display()
 
 	mat4 leftLegRotate = rotate(mat4(), deg2rad(leftLegDegree), vec3(-1.0f, 0.0f, 0.0f));
 	prev_model = torsorModel;
-	model = translate_mat;
+	//model = translate_mat;
+	model = translate_mat * temp_mat4 * leftLegRotate * temp_mat3; 
 	mat4 leftLegModel = model;
-	mvp = projection * view * torsorRotate * model * prev_model * temp_mat4 * leftLegRotate * temp_mat3;
+	//mvp = projection * view * torsorRotate * model * prev_model * temp_mat4 * leftLegRotate * temp_mat3;
+	mvp = projection * view * torsorModel * model;
 
 	// Transfer value of mvp to both shader's inner variable 'um4mvp'; 
 	glUniformMatrix4fv(um4mvp, 1, GL_FALSE, value_ptr(mvp));
@@ -783,9 +904,10 @@ void My_Display()
 
 	mat4 rightLegRotate = rotate(mat4(), deg2rad(rightLegDegree), vec3(-1.0f, 0.0f, 0.0f));
 	prev_model = torsorModel;
-	model = translate_mat;
+	model = translate_mat * temp_mat4 * rightLegRotate * temp_mat3;
 	mat4 rightLegModel = model;
-	mvp = projection * view * torsorRotate * model * prev_model * temp_mat4 * rightLegRotate * temp_mat3;
+	//mvp = projection * view * torsorRotate * model * prev_model * temp_mat4 * rightLegRotate * temp_mat3;
+	mvp = projection * view * torsorModel * model;
 
 	// Transfer value of mvp to both shader's inner variable 'um4mvp'; 
 	glUniformMatrix4fv(um4mvp, 1, GL_FALSE, value_ptr(mvp));
@@ -795,8 +917,64 @@ void My_Display()
 	// Tell openGL to draw the vertex array we had binded before
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
+	const int ringPower = 6;
+	const int ringVertNum = 64; // 2^ringPower
+	const int ringMask = ringVertNum - 2;
+	const int sectionInRing = ringVertNum / 2 - 1;
+	const int sphereVertNum = sectionInRing * ringVertNum;
+	const float sectionArc = 6.28 / sectionInRing;
+
+	const float sphereRadius = -0.125f; // radius = 10
+	float sphereData[sphereVertNum * 3 * 2];
+	float angleX, angleY;
+	for (int i = 0; i < sphereVertNum; ++i) {
+		angleX = (float)(i & 1) + (i >> ringPower);
+		angleY = (float)((i & ringMask) >> 1) + ((i >> ringPower) * (sectionInRing));
+
+		angleX *= (float)sectionArc / 2.0f;
+		angleY *= (float)sectionArc*-1;
+		sphereData[i * 3 + 0] = sphereRadius * sin(angleX) * sin(angleY);
+		sphereData[i * 3 + 1] = sphereRadius * cos(angleX);
+		sphereData[i * 3 + 2] = sphereRadius * sin(angleX) * cos(angleY);
+	}
+	for (int i = sphereVertNum; i < 2 * sphereVertNum; ++i) {
+		sphereData[i * 3 + 0] = 0.4f;
+		sphereData[i * 3 + 1] = 0.1f;
+		sphereData[i * 3 + 2] = 0.0f;
+	}
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(sphereData), sphereData, GL_STATIC_DRAW);
+
+	//Select which range as vertex and which as color
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float) * sphereVertNum * 3));
+
+	translate_mat = translate(mat4(), vec3(-0.25f, 0.0f, 0.5f));
+	model = translate_mat;
+
+	mvp = projection * view * torsorModel * headModel * model;
 
 
+	// Transfer value of mvp to both shader's inner variable 'um4mvp'; 
+	glUniformMatrix4fv(um4mvp, 1, GL_FALSE, value_ptr(mvp));
+
+	// Tell openGL to draw the vertex array we had binded before
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, sphereVertNum);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float) * sphereVertNum * 3));
+
+	translate_mat = translate(mat4(), vec3(0.25f, 0.0f, 0.5f));
+	model = translate_mat;
+
+	mvp = projection * view * torsorModel * headModel * model;
+
+
+	// Transfer value of mvp to both shader's inner variable 'um4mvp'; 
+	glUniformMatrix4fv(um4mvp, 1, GL_FALSE, value_ptr(mvp));
+
+	// Tell openGL to draw the vertex array we had binded before
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, sphereVertNum);
 
 	////////////////////test////////////////
 	//Put data into buffer
@@ -850,6 +1028,8 @@ void My_Timer(int val)
 		glutTimerFunc(timer_speed, My_Timer, val);
 	}
 }
+
+
 
 void My_Keyboard(unsigned char key, int x, int y)
 {
@@ -911,12 +1091,6 @@ void My_Menu(int id)
 	case MENU_EXIT:
 		exit(0);
 		break;
-	case MENU_SLOW:
-		speed = 0.05f;
-		break;
-	case MENU_FAST:
-		speed = 0.1f;
-		break;
 		//TODO :
 		//You should add new case to deal with MENU_SLOW and MENU_FAST
 
@@ -927,6 +1101,11 @@ void My_Menu(int id)
 		break;
 	}
 }
+void My_Motion_Mouse(int x, int y) {
+	mouseRotateX = x - mousePressX;
+	mouseRotateY = y - mousePressY;
+	glutPostRedisplay();
+}
 
 void My_Mouse(int button, int state, int x, int y)
 {
@@ -934,21 +1113,17 @@ void My_Mouse(int button, int state, int x, int y)
 	{
 		if (state == GLUT_DOWN)
 		{
-			mousePressPositionX = x - 300;
-			mousePressPositionY = y - 300;
-			mousePressPosition = vec2(x - 300, y - 300);
+			mousePressX = x;
+			mousePressY = y;
 			printf("Mouse %d is pressed at (%d, %d)\n", button, x, y);
 		}
 		else if (state == GLUT_UP)
 		{
-			mouseReleasePositionX = x - 300;
-			mouseReleasePositionY = y - 300;
-			mouseReleasePosition = vec2(x - 300, y - 300);
-			if (mousePressPosition.length() != 0 && mouseReleasePosition.length() != 0) {
-				float degree = acos (dot(mousePressPosition, mouseReleasePosition) / 
-					mousePressPosition.length() * mouseReleasePosition.length());
-				mouseRotateDegree += degree;
-			}
+			prevMouseRotateX += x - mousePressX;
+			prevMouseRotateY += y - mousePressY;
+
+			mouseRotateX = 0.0f;
+			mouseRotateY = 0.0f;
 			printf("Mouse %d is released at (%d, %d)\n", button, x, y);
 		}
 	}
@@ -996,7 +1171,6 @@ int main(int argc, char *argv[])
 
 	glutSetMenu(menu_main);
 	glutAddSubMenu("Timer", menu_timer);
-	glutAddSubMenu("Speed", menu_speed);
 	glutAddMenuEntry("Exit", MENU_EXIT);
 
 	glutSetMenu(menu_timer);
@@ -1005,10 +1179,6 @@ int main(int argc, char *argv[])
 
 	//TODO :
 	//Create new entry about MENU_SLOW and MENU_FAST under the speed menu
-	glutSetMenu(menu_speed);
-	glutAddMenuEntry("Slow", MENU_SLOW);
-	glutAddMenuEntry("Fast", MENU_FAST);
-
 
 
 	glutSetMenu(menu_main);
